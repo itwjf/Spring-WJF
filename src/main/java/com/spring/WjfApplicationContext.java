@@ -1,6 +1,7 @@
 package com.spring;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Map;
@@ -53,6 +54,24 @@ public class WjfApplicationContext {
         try {
             //根据class对象，实例化bean;
             Object instance = clazz.getDeclaredConstructor().newInstance();
+
+
+            //依赖注入
+
+            for (Field declaredField : clazz.getDeclaredFields()) { //通过class对象知道有哪些属性
+                //判断属性是否加了Autowired注解，才表示需要注入
+                if(declaredField.isAnnotationPresent(Autowired.class)){
+
+                    //getBean方法，会根据属性的名字去容器中获取bean
+                    Object bean = getBean(declaredField.getName());
+                    declaredField.setAccessible(true);
+                    declaredField.set(instance,bean);
+                }
+            }
+
+
+
+
 
             return instance;
         } catch (InstantiationException e) {

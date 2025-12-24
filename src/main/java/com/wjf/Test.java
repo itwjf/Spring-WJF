@@ -1,6 +1,7 @@
 package com.wjf;
 
 import com.spring.WjfApplicationContext;
+import com.wjf.service.UserService;
 
 public class Test {
 
@@ -8,10 +9,9 @@ public class Test {
 
         WjfApplicationContext applicationContext = new WjfApplicationContext(AppConfig.class);
 
-        System.out.println(applicationContext.getBean("userService"));
-        System.out.println(applicationContext.getBean("userService"));
-        System.out.println(applicationContext.getBean("userService"));
+        UserService userService =(UserService) applicationContext.getBean("userService");
 
+        userService.test();
 
     }
 }
