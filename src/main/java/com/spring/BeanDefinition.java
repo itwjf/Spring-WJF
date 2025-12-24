@@ -1,9 +1,13 @@
 package com.spring;
 
+/**
+ * 表示bean中有的属性
+ * 比如说当前bean的类型、作用域
+ */
 public class BeanDefinition {
 
-    private Class clazz;
-    private String scope;
+    private Class clazz; //表示当前bean的类型
+    private String scope; //表示当前bean的作用范围
 
 
     public Class getClazz() {
