@@ -36,7 +36,7 @@ public class WjfApplicationContext {
             BeanDefinition beanDefinition = entry.getValue();
 
             if(beanDefinition.getScope().equals("singleton")){
-                Object bean = createBean(beanDefinition);
+                Object bean = createBean(beanName,beanDefinition);
                 singletonObjects.put(beanName,bean);
             }
         }
@@ -44,10 +44,11 @@ public class WjfApplicationContext {
 
     /**
      *
+     * @param beanName bean的名字
      * @param beanDefinition 根据beanDefinition创建bean
-     * @return 返回bean
+     * @return 创建的实列
      */
-    public Object createBean(BeanDefinition beanDefinition){
+    public Object createBean(String beanName,BeanDefinition beanDefinition){
 
         //根据beanDefinition得到bean的类型，得到Class对象
         Class clazz = beanDefinition.getClazz();
@@ -57,20 +58,35 @@ public class WjfApplicationContext {
 
 
             //依赖注入
-
             for (Field declaredField : clazz.getDeclaredFields()) { //通过class对象知道有哪些属性
                 //判断属性是否加了Autowired注解，才表示需要注入
                 if(declaredField.isAnnotationPresent(Autowired.class)){
 
                     //getBean方法，会根据属性的名字去容器中获取bean
                     Object bean = getBean(declaredField.getName());
+                    //这里可以加一个抛出异常判断：如果没有根据这个信息在容器中找到bean，抛出异常
+//                    if(bean == null){
+//
+//                    }
                     declaredField.setAccessible(true);
                     declaredField.set(instance,bean);
                 }
             }
 
+            //Aware回调
+            /** 判断当前实列有没有实现BeanNameAware接口，如果实现了则将BeanName传给这个实列 */
+            if(instance instanceof BeanNameAware){
+                ((BeanNameAware) instance).setBeanName(beanName);
+            }
 
-
+            //初始化
+            if(instance instanceof InitializingBean){
+                try {
+                    ((InitializingBean) instance).afterPropertiesSet();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
 
 
             return instance;
@@ -151,7 +167,7 @@ public class WjfApplicationContext {
                 return o;
             }else {
                 // 创建bean对象
-                Object bean = createBean(beanDefinition);
+                Object bean = createBean(beanName,beanDefinition);
                 return bean;
             }
         }else {
